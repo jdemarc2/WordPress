@@ -5,6 +5,7 @@ Description: Integrates Stripe Checkout into your WordPress site.
 Version: 1.0
 Author: Jonathan DeMarco
 */
+require_once plugin_dir_path(__FILE__) . 'stripe-php-master/init.php'; // Adjust the path as necessary
 
 // Enqueue scripts
 function stripe_checkout_enqueue_scripts() {
