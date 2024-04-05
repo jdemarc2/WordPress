@@ -1,5 +1,5 @@
 <?php
-require_once 'path/to/stripe-php/init.php'; // Adjust the path as necessary
+require_once plugin_dir_path(__FILE__) . 'stripe-php-master/init.php'; // Adjust the path as necessary
 
 $stripe = new \Stripe\StripeClient([
     "api_key" => "YOUR_SECRET_KEY",
