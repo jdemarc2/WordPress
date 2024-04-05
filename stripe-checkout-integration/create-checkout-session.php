@@ -5,23 +5,32 @@ $stripe = new \Stripe\StripeClient([
     "api_key" => "YOUR_SECRET_KEY",
 ]);
 
-$checkout_session = $stripe->checkout->sessions->create([
-    'payment_method_types' => ['card'],
-    'line_items' => [
-        [
-            'price_data' => [
-                'currency' => 'usd',
-                'product_data' => [
-                    'name' => 'T-shirt',
-                ],
-                'unit_amount' => 2000,
-            ],
-            'quantity' => 1,
-        ],
-    ],
-    'mode' => 'payment',
-    'success_url' => site_url('/checkout/success'),
-    'cancel_url' => site_url('/checkout/cancel'),
-]);
+// Get cart contents from WooCommerce
+$cart_items = WC()->cart->get_cart();
 
-echo json_encode(array('sessionId' => $checkout_session->id));
+// Prepare line items array for Stripe Checkout Session
+$line_items = array();
+foreach ($cart_items as $cart_item_key => $cart_item) {
+    $product = $cart_item['data'];
+    $price = $product->get_price();
+    $product_type = 'one-time'; // Default to one-time purchase
+
+    // Check if the product is a subscription
+    if (wcs_order_contains_subscription($cart_item['data']->get_id())) {
+        $product_type = 'subscription';
+    }
+
+    $line_items[] = [
+        'price_data' => [
+            'currency' => get_woocommerce_currency(),
+            'product_data' => [
+                'name' => $product->get_name(),
+                'metadata' => [
+                    'product_type' => $product_type,
+                ],
+            ],
+            'unit_amount' => wc_get_price_excluding_tax($product),
+        ],
+        'quantity' => $cart_item['quantity'],
+    ];
+}
